@@ -1,0 +1,12 @@
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
+
+        // Warning: this repository is going to shut down soon
+        maven { url 'https://maven.aliyun.com/repository/public' }
+    }
+}
+rootProject.name = "Auto.car"
+include ':app'
