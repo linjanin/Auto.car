@@ -14,14 +14,12 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         switch (intent.getAction()) {
             case BluetoothDevice.ACTION_ACL_CONNECTED:
-                Toast.makeText(context, "接受到了蓝牙设备连接的消息", Toast.LENGTH_LONG).show();
-                final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                final String name = device.getName();
-                final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-                preferences.edit()
-                        .putString("signature", name)
-                        .apply();
-                //WifiUtils.tureOnWifi(context);
+                Toast.makeText(context, "接收到了蓝牙设备连接的消息", Toast.LENGTH_LONG).show();
+                final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+                final boolean follow = sp.getBoolean("follow_bluetooth", false);
+                if (follow) {
+                    WifiUtils.tureOnWifi(context);
+                }
                 break;
             case BluetoothDevice.ACTION_ACL_DISCONNECTED:
             case BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED:
