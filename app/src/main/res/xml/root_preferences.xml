@@ -5,13 +5,13 @@
         <SwitchPreferenceCompat
             app:defaultValue="false"
             app:key="wlan_autoload_on_boot"
-            app:title="@string/autoload_on_boot_title" />
+            app:title="@string/wlan_autoload_on_boot_title" />
 
         <MultiSelectListPreference
             app:entries="@array/empty_array"
             app:entryValues="@array/empty_array"
             app:key="wlan_follow_bluetooth"
-            app:title="@string/follow_bluetooth_title" />
+            app:title="@string/wlan_follow_bluetooth_title" />
 
     </PreferenceCategory>
 
