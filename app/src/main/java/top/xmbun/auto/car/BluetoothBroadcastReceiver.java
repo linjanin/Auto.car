@@ -6,15 +6,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.widget.Toast;
+import android.util.Log;
 
 public class BluetoothBroadcastReceiver extends BroadcastReceiver {
+
+    private static final String TAG = "BluetoothReceiver";
 
     @Override
     public void onReceive(Context context, Intent intent) {
         switch (intent.getAction()) {
             case BluetoothDevice.ACTION_ACL_CONNECTED:
-                Toast.makeText(context, "接收到了蓝牙设备连接的消息", Toast.LENGTH_LONG).show();
+                Log.d(TAG, "接收到了蓝牙设备连接的消息");
                 final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
                 final boolean follow = sp.getBoolean("follow_bluetooth", false);
                 if (follow) {
