@@ -8,6 +8,15 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import java.util.Collections;
+import java.util.Set;
+
+/**
+ * 蓝牙广播接收器.
+ *
+ * @author bun
+ * @since 2022-02-18
+ */
 public class BluetoothBroadcastReceiver extends BroadcastReceiver {
 
     private static final String TAG = "BluetoothReceiver";
@@ -17,10 +26,13 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
         switch (intent.getAction()) {
             case BluetoothDevice.ACTION_ACL_CONNECTED:
                 Log.d(TAG, "接收到了蓝牙设备连接的消息");
-                final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-                final boolean follow = sp.getBoolean("follow_bluetooth", false);
-                if (follow) {
-                    WifiUtils.tureOnWifi(context);
+                final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if (device != null) {
+                    final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+                    final Set<String> devices = sp.getStringSet(SettingsActivity.WLAN_FOLLOW_BLUETOOTH, Collections.emptySet());
+                    if (devices.contains(device.getName())) {
+                        WifiUtils.tureOnWifi(context);
+                    }
                 }
                 break;
             case BluetoothDevice.ACTION_ACL_DISCONNECTED:
