@@ -31,7 +31,7 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
                     final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
                     final Set<String> devices = sp.getStringSet(SettingsActivity.WLAN_FOLLOW_BLUETOOTH, Collections.emptySet());
                     if (devices.contains(device.getName())) {
-                        WifiUtils.tureOnWifi(context);
+                        WifiUtils.tureOn(context);
                     }
                 }
                 break;

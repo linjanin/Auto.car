@@ -1,9 +1,6 @@
 package top.xmbun.auto.car;
 
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -32,6 +29,11 @@ public class SettingsActivity extends AppCompatActivity {
      * 网络随指定蓝牙设备开启.
      */
     public static final String WLAN_FOLLOW_BLUETOOTH = "wlan_follow_bluetooth";
+
+    /**
+     * 蓝牙是否开机自启.
+     */
+    public static final String BLUETOOTH_AUTOLOAD_ON_BOOT = "bluetooth_autoload_on_boot";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,22 +64,11 @@ public class SettingsActivity extends AppCompatActivity {
 
                 // 准备已配对蓝牙设备列表
                 final Set<String> entries = new HashSet<>();
-                final BluetoothAdapter adapter;
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                    adapter = BluetoothAdapter.getDefaultAdapter();
-                } else {
-                    final BluetoothManager manager = (BluetoothManager) getContext().getSystemService(BLUETOOTH_SERVICE);
-                    adapter = manager.getAdapter();
-                }
-                if (adapter != null) {
-                    final Set<BluetoothDevice> devices = adapter.getBondedDevices();
-                    if (devices != null) {
-                        for (BluetoothDevice device : devices) {
-                            final String name = device.getName();
-                            if (!TextUtils.isEmpty(name)) {
-                                entries.add(name);
-                            }
-                        }
+                final Set<BluetoothDevice> devices = BluetoothUtils.getBondedDevices(getContext());
+                for (BluetoothDevice device : devices) {
+                    final String name = device.getName();
+                    if (!TextUtils.isEmpty(name)) {
+                        entries.add(name);
                     }
                 }
 

@@ -19,7 +19,7 @@ public class WifiUtils {
      *
      * @param context 上下文
      */
-    public static void tureOnWifi(Context context) {
+    public static void tureOn(Context context) {
         final WifiManager wifiManager = (WifiManager) context.getApplicationContext()
                 .getSystemService(Context.WIFI_SERVICE);
         Log.d(TAG, "当前wifi: " + wifiManager.isWifiEnabled());
@@ -34,7 +34,7 @@ public class WifiUtils {
      *
      * @param context 上下文
      */
-    public static void tureOffWifi(Context context) {
+    public static void tureOff(Context context) {
         final WifiManager wifiManager = (WifiManager) context.getApplicationContext()
                 .getSystemService(Context.WIFI_SERVICE);
         Log.d(TAG, "当前wifi: " + wifiManager.isWifiEnabled());

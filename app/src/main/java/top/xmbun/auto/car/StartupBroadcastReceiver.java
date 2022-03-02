@@ -32,19 +32,46 @@ public class StartupBroadcastReceiver extends BroadcastReceiver {
         final long lastBootAt = sp.getLong(BOOT_AT, 0);
         final long bootAt = System.currentTimeMillis() - SystemClock.elapsedRealtime();
         final boolean reboot = Math.abs(bootAt - lastBootAt) > 5000;
-        if (reboot) {
-            sp.edit().putLong(BOOT_AT, bootAt).apply();
-        }
         Log.d(TAG, String.format("lastBootAt = %d, bootAt = %d, reboot = %b", lastBootAt, bootAt, reboot));
+        if (!reboot) {
+            return;
+        }
 
-        // 开机自启
-        if (reboot) {
-            // 网络
-            final boolean autoload = sp.getBoolean(SettingsActivity.WLAN_AUTOLOAD_ON_BOOT, false);
-            Log.d(TAG, SettingsActivity.WLAN_AUTOLOAD_ON_BOOT + " = " + autoload);
-            if (autoload) {
-                WifiUtils.tureOnWifi(context);
-            }
+        // 更新开机时间
+        sp.edit().putLong(BOOT_AT, bootAt).apply();
+
+        // 网络
+        wlan(context);
+
+        // 蓝牙
+        bluetooth(context);
+    }
+
+    /**
+     * 网络自启.
+     *
+     * @param context 上下文
+     */
+    private void wlan(Context context) {
+        final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        final boolean autoload = sp.getBoolean(SettingsActivity.WLAN_AUTOLOAD_ON_BOOT, false);
+        Log.d(TAG, SettingsActivity.WLAN_AUTOLOAD_ON_BOOT + " = " + autoload);
+        if (autoload) {
+            WifiUtils.tureOn(context);
+        }
+    }
+
+    /**
+     * 蓝牙自启.
+     *
+     * @param context 上下文
+     */
+    private void bluetooth(Context context) {
+        final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        final boolean autoload = sp.getBoolean(SettingsActivity.BLUETOOTH_AUTOLOAD_ON_BOOT, false);
+        Log.d(TAG, SettingsActivity.BLUETOOTH_AUTOLOAD_ON_BOOT + " = " + autoload);
+        if (autoload) {
+            BluetoothUtils.tureOn(context);
         }
     }
 }
