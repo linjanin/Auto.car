@@ -1,15 +1,23 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+### Mac OS ###
 .DS_Store
-/build
-/captures
+
+### Gradle ###
+.gradle
+build/
 .externalNativeBuild
-.cxx
-local.properties
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Android Studio ###
+.idea
+*.iws
+*.iml
+*.ipr
+/local.properties
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
