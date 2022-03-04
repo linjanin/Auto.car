@@ -4,10 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
-import android.text.TextUtils;
 import android.util.Log;
 
 /**
@@ -35,67 +33,13 @@ public class StartupBroadcastReceiver extends BroadcastReceiver {
         final long bootAt = System.currentTimeMillis() - SystemClock.elapsedRealtime();
         final boolean reboot = Math.abs(bootAt - lastBootAt) > 5000;
         Log.d(TAG, String.format("lastBootAt = %d, bootAt = %d, reboot = %b", lastBootAt, bootAt, reboot));
-        if (!reboot) {
-            return;
-        }
+        if (reboot) {
+            // 更新开机时间
+            sp.edit().putLong(BOOT_AT, bootAt).apply();
 
-        // 更新开机时间
-        sp.edit().putLong(BOOT_AT, bootAt).apply();
-
-        // 网络
-        wlan(context);
-
-        // 蓝牙
-        bluetooth(context);
-
-        // 导航
-        navigation(context);
-    }
-
-    /**
-     * 网络自启.
-     *
-     * @param context 上下文
-     */
-    private void wlan(Context context) {
-        final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        final boolean autoload = sp.getBoolean(SettingsActivity.WLAN_AUTOLOAD_ON_BOOT, false);
-        Log.d(TAG, String.format("%s = %b", SettingsActivity.WLAN_AUTOLOAD_ON_BOOT, autoload));
-        if (autoload) {
-            WifiUtils.tureOn(context);
-        }
-    }
-
-    /**
-     * 蓝牙自启.
-     *
-     * @param context 上下文
-     */
-    private void bluetooth(Context context) {
-        final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        final boolean autoload = sp.getBoolean(SettingsActivity.BLUETOOTH_AUTOLOAD_ON_BOOT, false);
-        Log.d(TAG, String.format("%s = %b", SettingsActivity.BLUETOOTH_AUTOLOAD_ON_BOOT, autoload));
-        if (autoload) {
-            BluetoothUtils.tureOn(context);
-        }
-    }
-
-    /**
-     * 导航自启.
-     *
-     * @param context 上下文
-     */
-    private void navigation(Context context) {
-        final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        final boolean autoload = sp.getBoolean(SettingsActivity.NAVIGATION_AUTOLOAD_ON_BOOT, false);
-        final String packageName = sp.getString(SettingsActivity.NAVIGATION_APP_INFO, null);
-        Log.d(TAG, String.format("%s = %b, %s = %s",
-                SettingsActivity.NAVIGATION_AUTOLOAD_ON_BOOT, autoload,
-                SettingsActivity.NAVIGATION_APP_INFO, packageName));
-        if (autoload && !TextUtils.isEmpty(packageName)) {
-            final PackageManager pm = context.getPackageManager();
-            final Intent intent = pm.getLaunchIntentForPackage(packageName);
-            context.startActivity(intent);
+            // 启动开机服务
+            final Intent serviceIntent = new Intent(context, StartupService.class);
+            context.startService(serviceIntent);
         }
     }
 }

@@ -35,6 +35,11 @@
             </intent-filter>
         </receiver>
 
+        <!-- 系统启动处理服务 -->
+        <service
+            android:name=".StartupService"
+            android:exported="false" />
+
         <!-- 蓝牙连接状态变更监听器 -->
         <receiver
             android:name=".BluetoothBroadcastReceiver"
@@ -57,5 +62,4 @@
             </intent-filter>
         </activity>
     </application>
-
 </manifest>
