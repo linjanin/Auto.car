@@ -6,6 +6,7 @@
     <!-- Preference Titles -->
     <string name="wlan_header">WLAN</string>
     <string name="bluetooth_header">蓝牙</string>
+    <string name="navigation_header">导航</string>
 
     <!-- WLAN Preferences -->
     <string name="wlan_autoload_on_boot_title">开机自启</string>
@@ -13,4 +14,8 @@
 
     <!-- Bluetooth Preferences -->
     <string name="bluetooth_autoload_on_boot_title">开机自启</string>
+
+    <!-- Navigation Preferences -->
+    <string name="navigation_autoload_on_boot_title">开机自启</string>
+    <string name="navigation_app_info">默认导航应用</string>
 </resources>

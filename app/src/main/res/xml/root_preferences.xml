@@ -1,4 +1,12 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory app:title="@string/bluetooth_header">
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:key="bluetooth_autoload_on_boot"
+            app:title="@string/bluetooth_autoload_on_boot_title" />
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/wlan_header">
         <SwitchPreferenceCompat
             app:defaultValue="false"
@@ -11,10 +19,15 @@
             app:title="@string/wlan_follow_bluetooth_title" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/bluetooth_header">
+    <PreferenceCategory app:title="@string/navigation_header">
         <SwitchPreferenceCompat
             app:defaultValue="false"
-            app:key="bluetooth_autoload_on_boot"
-            app:title="@string/bluetooth_autoload_on_boot_title" />
+            app:key="navigation_autoload_on_boot"
+            app:title="@string/navigation_autoload_on_boot_title" />
+        <ListPreference
+            android:entries="@array/empty_array"
+            android:entryValues="@array/empty_array"
+            android:key="navigation_app_info"
+            android:title="@string/navigation_app_info" />
     </PreferenceCategory>
 </PreferenceScreen>

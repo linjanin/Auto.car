@@ -4,8 +4,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.util.Log;
 
 /**
@@ -45,6 +47,9 @@ public class StartupBroadcastReceiver extends BroadcastReceiver {
 
         // 蓝牙
         bluetooth(context);
+
+        // 导航
+        navigation(context);
     }
 
     /**
@@ -55,7 +60,7 @@ public class StartupBroadcastReceiver extends BroadcastReceiver {
     private void wlan(Context context) {
         final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         final boolean autoload = sp.getBoolean(SettingsActivity.WLAN_AUTOLOAD_ON_BOOT, false);
-        Log.d(TAG, SettingsActivity.WLAN_AUTOLOAD_ON_BOOT + " = " + autoload);
+        Log.d(TAG, String.format("%s = %b", SettingsActivity.WLAN_AUTOLOAD_ON_BOOT, autoload));
         if (autoload) {
             WifiUtils.tureOn(context);
         }
@@ -69,9 +74,28 @@ public class StartupBroadcastReceiver extends BroadcastReceiver {
     private void bluetooth(Context context) {
         final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         final boolean autoload = sp.getBoolean(SettingsActivity.BLUETOOTH_AUTOLOAD_ON_BOOT, false);
-        Log.d(TAG, SettingsActivity.BLUETOOTH_AUTOLOAD_ON_BOOT + " = " + autoload);
+        Log.d(TAG, String.format("%s = %b", SettingsActivity.BLUETOOTH_AUTOLOAD_ON_BOOT, autoload));
         if (autoload) {
             BluetoothUtils.tureOn(context);
+        }
+    }
+
+    /**
+     * 导航自启.
+     *
+     * @param context 上下文
+     */
+    private void navigation(Context context) {
+        final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        final boolean autoload = sp.getBoolean(SettingsActivity.NAVIGATION_AUTOLOAD_ON_BOOT, false);
+        final String packageName = sp.getString(SettingsActivity.NAVIGATION_APP_INFO, null);
+        Log.d(TAG, String.format("%s = %b, %s = %s",
+                SettingsActivity.NAVIGATION_AUTOLOAD_ON_BOOT, autoload,
+                SettingsActivity.NAVIGATION_APP_INFO, packageName));
+        if (autoload && !TextUtils.isEmpty(packageName)) {
+            final PackageManager pm = context.getPackageManager();
+            final Intent intent = pm.getLaunchIntentForPackage(packageName);
+            context.startActivity(intent);
         }
     }
 }
