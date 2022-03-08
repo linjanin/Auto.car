@@ -3,6 +3,7 @@ package top.xmbun.auto.car;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
@@ -17,8 +18,12 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -104,18 +109,43 @@ public class SettingsActivity extends AppCompatActivity {
                 final ListPreference list = (ListPreference) preference;
 
                 // 查询已安装导航软件
+                final List<ApplicationInfo> apps = new ArrayList<>();
+                final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0"));
+                final PackageManager pm = preference.getContext().getPackageManager();
+                final List<ResolveInfo> preferreds = pm.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+                for (ResolveInfo resolveInfo : preferreds) {
+                    apps.add(resolveInfo.activityInfo.applicationInfo);
+                }
+                final Comparator<ApplicationInfo> comparator = (l, r) -> {
+                    final String ls = pm.getApplicationLabel(l).toString();
+                    final String rs = pm.getApplicationLabel(r).toString();
+                    return ls.compareTo(rs);
+                };
+                Collections.sort(apps, comparator);
+
+                // 查询所有软件，以备未找到可用导航软件的情况
+                final Map<String, ApplicationInfo> all = new HashMap<>();
+                final List<PackageInfo> installeds = pm.getInstalledPackages(0);
+                for (PackageInfo packageInfo : installeds) {
+                    all.put(packageInfo.applicationInfo.packageName, packageInfo.applicationInfo);
+                }
+                for (ApplicationInfo app : apps) {
+                    // 移除先前找到的导航软件
+                    all.remove(app.packageName);
+                }
+                final List<ApplicationInfo> t = new ArrayList<>(all.values());
+                Collections.sort(t, comparator);
+                apps.addAll(t);
+
+                // 设置列表选项
                 final List<String> entries = new ArrayList<>();
                 final List<String> entryValues = new ArrayList<>();
-                final PackageManager pm = preference.getContext().getPackageManager();
-                final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0"));
-                final List<ResolveInfo> apps = pm.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-                for (ResolveInfo app : apps) {
-                    final ApplicationInfo info = app.activityInfo.applicationInfo;
-                    entries.add(pm.getApplicationLabel(info).toString());
-                    entryValues.add(info.packageName);
+                for (ApplicationInfo app : apps) {
+                    final boolean isSystemApp = (ApplicationInfo.FLAG_SYSTEM & app.flags) != 0;
+                    final String label = pm.getApplicationLabel(app).toString();
+                    entries.add(isSystemApp ? "*" + label : label);
+                    entryValues.add(app.packageName);
                 }
-
-                // 设备列表选项
                 list.setEntries(entries.toArray(new String[0]));
                 list.setEntryValues(entryValues.toArray(new String[0]));
             }
