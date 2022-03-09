@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import top.xmbun.auto.car.preference.TimePickerDialogFragmentCompat;
+import top.xmbun.auto.car.preference.TimePickerPreference;
+
 /**
  * 设置页.
  *
@@ -78,6 +81,18 @@ public class SettingsActivity extends AppCompatActivity {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
+        }
+
+        @Override
+        public void onDisplayPreferenceDialog(Preference preference) {
+            if (preference instanceof TimePickerPreference) {
+                final TimePickerDialogFragmentCompat f =
+                        TimePickerDialogFragmentCompat.newInstance(preference.getKey());
+                f.setTargetFragment(this, 0);
+                f.show(getParentFragmentManager(), TimePickerDialogFragmentCompat.TAG);
+            } else {
+                super.onDisplayPreferenceDialog(preference);
+            }
         }
 
         @Override

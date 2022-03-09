@@ -29,5 +29,9 @@
             android:entryValues="@array/empty_array"
             android:key="navigation_app_info"
             android:title="@string/navigation_app_info" />
+        <top.xmbun.auto.car.preference.TimePickerPreference
+            app:hourEnabled="false"
+            app:key="navigation_delay_interval"
+            app:title="延时启动" />
     </PreferenceCategory>
 </PreferenceScreen>

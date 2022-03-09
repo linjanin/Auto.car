@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="TimePickerPreferenceCompat">
+        <attr name="secondMinValue" format="integer" />
+        <attr name="secondMaxValue" format="integer" />
+        <attr name="secondUnitText" format="string|reference" />
+        <attr name="secondEnabled" format="boolean" />
+        <attr name="minuteMinValue" format="integer" />
+        <attr name="minuteMaxValue" format="integer" />
+        <attr name="minuteUnitText" format="string|reference" />
+        <attr name="minuteEnabled" format="boolean" />
+        <attr name="hourMinValue" format="integer" />
+        <attr name="hourMaxValue" format="integer" />
+        <attr name="hourUnitText" format="string|reference" />
+        <attr name="hourEnabled" format="boolean" />
+        <attr name="wrapSelectorWheel" format="boolean" />
+    </declare-styleable>
+</resources>
