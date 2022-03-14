@@ -61,6 +61,13 @@ public class SettingsActivity extends AppCompatActivity {
      */
     public static final String NAVIGATION_APP_INFO = "navigation_app_info";
 
+    /**
+     * 导航启动延时.
+     * <p>
+     * 秒制。
+     */
+    public static final String NAVIGATION_DELAY_INTERVAL = "navigation_delay_interval";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
