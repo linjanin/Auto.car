@@ -3,7 +3,9 @@ package top.xmbun.auto.car;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.IBinder;
 
@@ -34,6 +36,7 @@ public class DaemonService extends Service {
                 .setContentIntent(obtainPendingIntent(SettingsActivity.class))
                 .build();
         startForeground(1329, notification);
+        enforceComponentEnabled();
 
         return START_STICKY;
     }
@@ -45,6 +48,7 @@ public class DaemonService extends Service {
         } else {
             stopForeground(STOP_FOREGROUND_REMOVE);
         }
+        enforceComponentEnabled();
         super.onDestroy();
     }
 
@@ -63,5 +67,16 @@ public class DaemonService extends Service {
             flags = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT;
         }
         return PendingIntent.getActivity(this, 0, intent, flags);
+    }
+
+    /**
+     * 强制启用组件.
+     */
+    private void enforceComponentEnabled() {
+        final PackageManager pm = getPackageManager();
+        final ComponentName receiver = new ComponentName(this, StartupBroadcastReceiver.class);
+        pm.setComponentEnabledSetting(receiver,
+                PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
+                PackageManager.DONT_KILL_APP);
     }
 }
