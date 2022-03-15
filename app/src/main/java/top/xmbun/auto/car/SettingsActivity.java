@@ -101,6 +101,9 @@ public class SettingsActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+        // 启动守护服务
+        startService(new Intent(this, DaemonService.class));
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {

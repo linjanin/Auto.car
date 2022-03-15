@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Auto.car</string>
+    <string name="app_brief">自动开网络、蓝牙、导航等。</string>
+
     <!-- Settings Activity Title -->
     <string name="title_activity_settings">SettingsActivity</string>
 

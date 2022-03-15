@@ -27,6 +27,9 @@ public class StartupBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "接收到了系统启动消息: " + intent.getAction());
 
+        // 守护服务保活
+        context.startService(new Intent(context, DaemonService.class));
+
         // 判断是否开机初次启动: 记录的开机时间和当前计算出来的开机时间相差超过 5 秒时认为机器重启过
         final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         final long lastBootAt = sp.getLong(BOOT_AT, 0);
