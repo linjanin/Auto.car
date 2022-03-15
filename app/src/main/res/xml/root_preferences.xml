@@ -28,10 +28,26 @@
             android:entries="@array/empty_array"
             android:entryValues="@array/empty_array"
             android:key="navigation_app_info"
-            android:title="@string/navigation_app_info" />
+            android:title="@string/navigation_app_info_title" />
         <top.xmbun.auto.car.preference.TimePickerPreference
             app:hourEnabled="false"
             app:key="navigation_delay_interval"
-            app:title="延时启动" />
+            app:title="@string/navigation_delay_interval_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/music_header">
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:key="music_autoload_on_boot"
+            app:title="@string/navigation_autoload_on_boot_title" />
+        <ListPreference
+            android:entries="@array/empty_array"
+            android:entryValues="@array/empty_array"
+            android:key="music_app_info"
+            android:title="@string/music_app_info_title" />
+        <top.xmbun.auto.car.preference.TimePickerPreference
+            app:hourEnabled="false"
+            app:key="music_delay_interval"
+            app:title="@string/music_delay_interval_title" />
     </PreferenceCategory>
 </PreferenceScreen>

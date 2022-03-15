@@ -7,6 +7,7 @@
     <string name="wlan_header">WLAN</string>
     <string name="bluetooth_header">蓝牙</string>
     <string name="navigation_header">导航</string>
+    <string name="music_header">音乐</string>
 
     <!-- WLAN Preferences -->
     <string name="wlan_autoload_on_boot_title">开机自启</string>
@@ -17,5 +18,11 @@
 
     <!-- Navigation Preferences -->
     <string name="navigation_autoload_on_boot_title">开机自启</string>
-    <string name="navigation_app_info">默认导航应用</string>
+    <string name="navigation_app_info_title">默认导航应用</string>
+    <string name="navigation_delay_interval_title">延时启动</string>
+
+    <!-- Music Preferences -->
+    <string name="music_autoload_on_boot_title">开机自启</string>
+    <string name="music_app_info_title">默认音乐应用</string>
+    <string name="music_delay_interval_title">延时启动</string>
 </resources>

@@ -1,12 +1,14 @@
 package top.xmbun.auto.car;
 
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -67,6 +69,23 @@ public class SettingsActivity extends AppCompatActivity {
      * 秒制。
      */
     public static final String NAVIGATION_DELAY_INTERVAL = "navigation_delay_interval";
+
+    /**
+     * 音乐是否开机自启.
+     */
+    public static final String MUSIC_AUTOLOAD_ON_BOOT = "music_autoload_on_boot";
+
+    /**
+     * 默认音乐应用.
+     */
+    public static final String MUSIC_APP_INFO = "music_app_info";
+
+    /**
+     * 音乐启动延时.
+     * <p>
+     * 秒制。
+     */
+    public static final String MUSIC_DELAY_INTERVAL = "music_delay_interval";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,41 +150,31 @@ public class SettingsActivity extends AppCompatActivity {
                 final ListPreference list = (ListPreference) preference;
 
                 // 查询已安装导航软件
-                final List<ApplicationInfo> apps = new ArrayList<>();
                 final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0"));
-                final PackageManager pm = preference.getContext().getPackageManager();
-                final List<ResolveInfo> preferreds = pm.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-                for (ResolveInfo resolveInfo : preferreds) {
-                    apps.add(resolveInfo.activityInfo.applicationInfo);
-                }
-                final Comparator<ApplicationInfo> comparator = (l, r) -> {
-                    final String ls = pm.getApplicationLabel(l).toString();
-                    final String rs = pm.getApplicationLabel(r).toString();
-                    return ls.compareTo(rs);
-                };
-                Collections.sort(apps, comparator);
-
-                // 查询所有软件，以备未找到可用导航软件的情况
-                final Map<String, ApplicationInfo> all = new HashMap<>();
-                final List<PackageInfo> installeds = pm.getInstalledPackages(0);
-                for (PackageInfo packageInfo : installeds) {
-                    all.put(packageInfo.applicationInfo.packageName, packageInfo.applicationInfo);
-                }
-                for (ApplicationInfo app : apps) {
-                    // 移除先前找到的导航软件
-                    all.remove(app.packageName);
-                }
-                final List<ApplicationInfo> t = new ArrayList<>(all.values());
-                Collections.sort(t, comparator);
-                apps.addAll(t);
+                final List<App> apps = listAllWithPreferredApps(intent);
 
                 // 设置列表选项
                 final List<String> entries = new ArrayList<>();
                 final List<String> entryValues = new ArrayList<>();
-                for (ApplicationInfo app : apps) {
-                    final boolean isSystemApp = (ApplicationInfo.FLAG_SYSTEM & app.flags) != 0;
-                    final String label = pm.getApplicationLabel(app).toString();
-                    entries.add(isSystemApp ? "*" + label : label);
+                for (App app : apps) {
+                    entries.add(app.systemApp ? "*" + app.label : app.label);
+                    entryValues.add(app.packageName);
+                }
+                list.setEntries(entries.toArray(new String[0]));
+                list.setEntryValues(entryValues.toArray(new String[0]));
+            } else if (MUSIC_APP_INFO.equals(preference.getKey())) {
+                final ListPreference list = (ListPreference) preference;
+
+                // 查询已安装音乐软件
+                final Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setDataAndType(Uri.parse("file://"), "audio/*");
+                final List<App> apps = listAllWithPreferredApps(intent);
+
+                // 设置列表选项
+                final List<String> entries = new ArrayList<>();
+                final List<String> entryValues = new ArrayList<>();
+                for (App app : apps) {
+                    entries.add(app.systemApp ? "*" + app.label : app.label);
                     entryValues.add(app.packageName);
                 }
                 list.setEntries(entries.toArray(new String[0]));
@@ -173,6 +182,105 @@ public class SettingsActivity extends AppCompatActivity {
             }
 
             return super.onPreferenceTreeClick(preference);
+        }
+
+        /**
+         * 列出所有软件.
+         * <p>
+         * 优选在前。
+         *
+         * @param preferred 优选意图
+         * @return 软件集
+         */
+        protected List<App> listAllWithPreferredApps(Intent preferred) {
+            final Context context = getContext();
+            assert context != null;
+            final PackageManager pm = context.getPackageManager();
+
+            // 根据软件名称排序
+            final Comparator<App> comparator;
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                comparator = (l, r) -> {
+                    return l.label.compareTo(r.label);
+                };
+            } else {
+                comparator = Comparator.comparing(t -> t.label);
+            }
+
+            // 优选软件在前
+            final List<App> apps = new ArrayList<>();
+            final List<ResolveInfo> preferreds = pm.queryIntentActivities(preferred,
+                    PackageManager.MATCH_DEFAULT_ONLY);
+            for (ResolveInfo resolveInfo : preferreds) {
+                apps.add(App.from(resolveInfo.activityInfo.applicationInfo, pm));
+            }
+            Collections.sort(apps, comparator);
+
+            // 其他软件在后，以备未找到可用软件的情况
+            final Map<String, App> all = new HashMap<>();
+            final List<PackageInfo> installeds = pm.getInstalledPackages(0);
+            for (PackageInfo packageInfo : installeds) {
+                final App app = App.from(packageInfo.applicationInfo, pm);
+                all.put(app.packageName, app);
+            }
+            for (App app : apps) {
+                // 移除优选软件
+                all.remove(app.packageName);
+            }
+            final List<App> t = new ArrayList<>(all.values());
+            Collections.sort(t, comparator);
+            apps.addAll(t);
+
+            return apps;
+        }
+
+        /**
+         * 软件信息.
+         */
+        protected static class App {
+            private String packageName;
+            private String label;
+            private boolean systemApp;
+
+            public static App from(ApplicationInfo info, PackageManager packageManager) {
+                final String packageName = info.packageName;
+                final String label = info.loadLabel(packageManager).toString();
+                final boolean isSystemApp = (ApplicationInfo.FLAG_SYSTEM & info.flags) != 0;
+                return new App(packageName, label, isSystemApp);
+            }
+
+            public App() {
+            }
+
+            public App(String packageName, String label, boolean systemApp) {
+                this.packageName = packageName;
+                this.label = label;
+                this.systemApp = systemApp;
+            }
+
+            public String getPackageName() {
+                return packageName;
+            }
+
+            public void setPackageName(String packageName) {
+                this.packageName = packageName;
+            }
+
+            public String getLabel() {
+                return label;
+            }
+
+            public void setLabel(String label) {
+                this.label = label;
+            }
+
+            public boolean isSystemApp() {
+                return systemApp;
+            }
+
+            public void setSystemApp(boolean systemApp) {
+                this.systemApp = systemApp;
+            }
         }
     }
 }

@@ -33,6 +33,11 @@ public class StartupService extends IntentService {
      */
     public static final int NAVIGATION_REQUEST_CODE = 1;
 
+    /**
+     * 音乐启动请求码.
+     */
+    public static final int MUSIC_REQUEST_CODE = 2;
+
     public StartupService() {
         super("StartupService");
     }
@@ -65,6 +70,18 @@ public class StartupService extends IntentService {
             handler.post(() -> {
                 Toast.makeText(context,
                         "开启导航失败: " + e.getLocalizedMessage(), Toast.LENGTH_LONG)
+                        .show();
+            });
+        }
+
+        // 音乐
+        try {
+            music();
+        } catch (Throwable e) {
+            Log.e(TAG, "操作音乐失败", e);
+            handler.post(() -> {
+                Toast.makeText(context,
+                        "开启音乐失败: " + e.getLocalizedMessage(), Toast.LENGTH_LONG)
                         .show();
             });
         }
@@ -107,41 +124,73 @@ public class StartupService extends IntentService {
                 SettingsActivity.NAVIGATION_APP_INFO, packageName,
                 SettingsActivity.NAVIGATION_DELAY_INTERVAL, delay));
         if (autoload && !TextUtils.isEmpty(packageName)) {
-            Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
-            if (intent == null) {
-                throw new ActivityNotFoundException("package = " + packageName);
-            }
-            if (delay <= 0) {
-                startActivity(intent);
-            } else {
-                // 构建延时启动命令
-                final int flags;
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                    flags = PendingIntent.FLAG_UPDATE_CURRENT;
-                } else {
-                    flags = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT;
-                }
-                final PendingIntent pendingIntent = PendingIntent.getActivity(this,
-                        NAVIGATION_REQUEST_CODE, intent, flags);
+            scheduleActivity(packageName, delay, NAVIGATION_REQUEST_CODE);
+        }
+    }
 
-                // 计算延时时长
-                final long triggerAtMillis;
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                    final Calendar c = Calendar.getInstance();
-                    c.add(Calendar.SECOND, delay);
-                    triggerAtMillis = c.getTimeInMillis();
-                } else {
-                    triggerAtMillis = Instant.now().plusSeconds(delay).toEpochMilli();
-                }
+    /**
+     * 音乐自启.
+     */
+    private void music() {
+        final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        final boolean autoload = sp.getBoolean(SettingsActivity.MUSIC_AUTOLOAD_ON_BOOT, false);
+        final String packageName = sp.getString(SettingsActivity.MUSIC_APP_INFO, null);
+        final int delay = sp.getInt(SettingsActivity.MUSIC_DELAY_INTERVAL, 0);
+        Log.d(TAG, String.format("%s = %b, %s = %s, %s = %d",
+                SettingsActivity.MUSIC_AUTOLOAD_ON_BOOT, autoload,
+                SettingsActivity.MUSIC_APP_INFO, packageName,
+                SettingsActivity.MUSIC_DELAY_INTERVAL, delay));
+        if (autoload && !TextUtils.isEmpty(packageName)) {
+            scheduleActivity(packageName, delay, MUSIC_REQUEST_CODE);
+        }
+    }
 
-                // 注册延时动作命令
-                final AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-                    alarmManager.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
-                } else {
-                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
-                }
-            }
+    /**
+     * 排期跳转应用.
+     *
+     * @param packageName 包名
+     * @param delay       延时
+     * @param requestCode 请求码
+     * @throws ActivityNotFoundException 应用未找到时抛出异常
+     */
+    private void scheduleActivity(String packageName, int delay, int requestCode)
+            throws ActivityNotFoundException {
+        final Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
+        if (intent == null) {
+            throw new ActivityNotFoundException("package = " + packageName);
+        }
+
+        // 无延时时直接启动
+        if (delay <= 0) {
+            startActivity(intent);
+            return;
+        }
+
+        // 构建延时启动命令
+        final int flags;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        } else {
+            flags = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT;
+        }
+        final PendingIntent pendingIntent = PendingIntent.getActivity(this, requestCode, intent, flags);
+
+        // 计算延时时长
+        final long triggerAtMillis;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            final Calendar c = Calendar.getInstance();
+            c.add(Calendar.SECOND, delay);
+            triggerAtMillis = c.getTimeInMillis();
+        } else {
+            triggerAtMillis = Instant.now().plusSeconds(delay).toEpochMilli();
+        }
+
+        // 注册延时动作命令
+        final AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            alarmManager.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+        } else {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
         }
     }
 }
